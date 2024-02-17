@@ -1,3 +1,7 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Stack;
 
 public class Casilla extends Thread{
@@ -134,11 +138,37 @@ public class Casilla extends Thread{
 	
 	
 	//Main
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// tamaño de la matriz
-		Casilla.n = 10;
-		Casilla.cartero = new Cartero(n);
-		Casilla[][] casillas = new Casilla[n][n];
+		
+		//Casilla.n = 10;
+		//Casilla.cartero = new Cartero(n);
+		//Casilla[][] casillas = new Casilla[n][n];
+		
+		//Leer archivo
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Ingrese el nombre del archivo: ");
+        String nombreArchivo = br.readLine();
+        br.close();
+
+		String path = "files/"+nombreArchivo;
+        BufferedReader archivo = new BufferedReader(new FileReader(path));
+        int tamañoMatriz = Integer.parseInt(archivo.readLine());
+
+		Casilla[][] casillas = new Casilla[tamañoMatriz][tamañoMatriz];
+
+        for (int i = 0; i < tamañoMatriz; i++){
+            String[] valores = archivo.readLine().split(",");
+
+            for (int j = 0; j < tamañoMatriz; j++) {
+                Boolean estadoInicial = Boolean.parseBoolean(valores[j]);
+                Casilla cas = new Casilla(i, j, estadoInicial);
+				System.out.println("Fila:" + Integer.toString(i)+ " " + 
+									"Columna: " + Integer.toString(j) + " " +
+									"Estado: "+ cas.getEstado());
+            }
+        }
+        archivo.close();
 		
 		//iniciar buzones
 		for(int fila = 0; fila < n; fila++) {
