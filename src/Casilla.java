@@ -154,6 +154,9 @@ public class Casilla extends Thread{
 		String path = "files/"+nombreArchivo;
         BufferedReader archivo = new BufferedReader(new FileReader(path));
         int tamañoMatriz = Integer.parseInt(archivo.readLine());
+		int generaciones = Integer.parseInt(archivo.readLine());
+
+		System.out.println("Generaciones: "+ Integer.toString(generaciones));
 
 		Casilla[][] casillas = new Casilla[tamañoMatriz][tamañoMatriz];
 
