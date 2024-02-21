@@ -11,8 +11,8 @@ public class Cartero {
 		buzones[fila][columna] = new Buzon(fila+1);
 	}
 	
-	public void consultarEnvio(int fila, int columna, boolean estado) {
-		buzones[fila][columna].apilar(estado);
+	public boolean consultarEnvio(int filaOrigen, int columnaOrigen, int fila, int columna, boolean estado) {
+		return buzones[fila][columna].apilar(buzones[filaOrigen][columnaOrigen], filaOrigen, columnaOrigen, fila, columna, estado);
 	}
 	
 	/*Desapilar

@@ -14,7 +14,8 @@ public class Casilla extends Thread{
 	private boolean estado;
 	private Stack<int[]> stack = new Stack<int[]>();
 	private static Cartero cartero;
-	private static int n;
+	private static int tamañoMatriz;
+	private static int generaciones;
 	
 	
 	
@@ -33,19 +34,28 @@ public class Casilla extends Thread{
 	public void run() {
 		calcularAdyacentes();
 		while(stack.size() > 0 || totalAdy > adyRecibido) {
-			if(stack.size() > 0) {
-				int[] pos = stack.pop();
-				cartero.consultarEnvio(pos[0], pos[1], estado);
-			}
 			if (totalAdy > adyRecibido) {
+				System.out.println("Entrar a mi buzon Origen["+ fila + "]["+ columna + "] total:" + totalAdy + " Recibidos:"+ adyRecibido);
 				int[] datos = cartero.consultarPropio(fila, columna);
 				adyRecibido+=datos[0];
 				adyVivas+=datos[1];
+				System.out.println("Mirado mi buzon Origen["+ fila + "]["+ columna + "] total:" + totalAdy + " Recibidos:"+ adyRecibido);
+				//System.err.println("hola");
+			}
+			
+			if(stack.size() > 0) {
+				int[] pos = stack.peek();
+				boolean result = cartero.consultarEnvio(fila, columna, pos[0], pos[1], estado);
+				if(result) {
+					stack.pop();
+				}
 			}
 		}
 		
 		if (adyVivas == 0 || adyVivas > 3) {
 			estado = false;
+		} else if(adyVivas == 3) {
+			estado = true;
 		}
 		
 	}
@@ -66,7 +76,7 @@ public class Casilla extends Thread{
 	    }
 
 	    // Verificar la casilla inferior
-	    if (fila + 1 < n) {
+	    if (fila + 1 < tamañoMatriz) {
 	        totalAdy++;
 	        int[] pos = new int[2];
 	        pos[0] = fila +1;
@@ -85,7 +95,7 @@ public class Casilla extends Thread{
 	    }
 
 	    // Verificar la casilla derecha
-	    if (columna + 1 < n) {
+	    if (columna + 1 < tamañoMatriz) {
 	        totalAdy++;
 	        
 	        int[] pos = new int[2];
@@ -105,7 +115,7 @@ public class Casilla extends Thread{
 	    }
 
 	    // Verificar la casilla superior derecha
-	    if (fila - 1 >= 0 && columna + 1 < n) {
+	    if (fila - 1 >= 0 && columna + 1 < tamañoMatriz) {
 	        totalAdy++;
 	        
 	        int[] pos = new int[2];
@@ -115,7 +125,7 @@ public class Casilla extends Thread{
 	    }
 
 	    // Verificar la casilla inferior izquierda
-	    if (fila + 1 < n && columna - 1 >= 0) {
+	    if (fila + 1 < tamañoMatriz && columna - 1 >= 0) {
 	        totalAdy++;
 	        
 	        int[] pos = new int[2];
@@ -125,7 +135,7 @@ public class Casilla extends Thread{
 	    }
 
 	    // Verificar la casilla inferior derecha
-	    if (fila + 1 < n && columna + 1 < n) {
+	    if (fila + 1 < tamañoMatriz && columna + 1 < tamañoMatriz) {
 	        totalAdy++;
 	        
 	        int[] pos = new int[2];
@@ -139,69 +149,53 @@ public class Casilla extends Thread{
 	
 	//Main
 	public static void main(String[] args) throws IOException {
-		// tamaño de la matriz
+		// Cargar Matriz
 		
-		//Casilla.n = 10;
-		//Casilla.cartero = new Cartero(n);
-		//Casilla[][] casillas = new Casilla[n][n];
-		
-		//Leer archivo
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Ingrese el nombre del archivo: ");
-        String nombreArchivo = br.readLine();
-        br.close();
+		Casilla[][] casillas  = cargarArchivo();
 
-		String path = "files/"+nombreArchivo;
-        BufferedReader archivo = new BufferedReader(new FileReader(path));
-        int tamañoMatriz = Integer.parseInt(archivo.readLine());
-		int generaciones = Integer.parseInt(archivo.readLine());
-
-		System.out.println("Generaciones: "+ Integer.toString(generaciones));
-
-		Casilla[][] casillas = new Casilla[tamañoMatriz][tamañoMatriz];
-
-        for (int i = 0; i < tamañoMatriz; i++){
-            String[] valores = archivo.readLine().split(",");
-
-            for (int j = 0; j < tamañoMatriz; j++) {
-                Boolean estadoInicial = Boolean.parseBoolean(valores[j]);
-                Casilla cas = new Casilla(i, j, estadoInicial);
-				System.out.println("Fila:" + Integer.toString(i)+ " " + 
-									"Columna: " + Integer.toString(j) + " " +
-									"Estado: "+ cas.getEstado());
-            }
-        }
-        archivo.close();
-		
+		//Iniciar cartero
+  		Casilla.cartero = new Cartero(tamañoMatriz);
+  		
 		//iniciar buzones
-		for(int fila = 0; fila < n; fila++) {
-			for(int columna = 0; columna < n; columna++) {
+		for(int fila = 0; fila < tamañoMatriz; fila++) {
+			for(int columna = 0; columna < tamañoMatriz; columna++) {
 				Casilla.cartero.iniciarBuzon(fila, columna);
 			}
 		}
-	
-		//Lanzar Hilos
-		for(int fila = 0; fila < n; fila++) {
-			for(int columna = 0; columna < n; columna++) {
-				casillas[fila][columna] = new Casilla(fila, columna, true);
-				casillas[fila][columna].start();;
-			}
-		}
+        
+		for (int i = 0; i < 1; i ++) {
+			
 		
-		// Esperar Hilos
-		for(int fila = 0; fila < n; fila++) {
-			for(int columna = 0; columna < n; columna++) {
-				try {
-					casillas[fila][columna].join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+	        //Lanzar Hilos
+	     		for(int fila = 0; fila < tamañoMatriz; fila++) {
+	     			for(int columna = 0; columna < tamañoMatriz; columna++) {
+	     				casillas[fila][columna] = new Casilla(fila, columna, casillas[fila][columna].getEstado());
+	    				casillas[fila][columna].start();
+	    				
+	     			}
+	     		}
+			
+			// Esperar Hilos
+			for(int fila = 0; fila < tamañoMatriz; fila++) {
+				for(int columna = 0; columna < tamañoMatriz; columna++) {
+					try {
+						casillas[fila][columna].join();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
+		imprimiMatriz(casillas);
 		
-		for(int fila = 0; fila < n; fila++) {
-			for(int columna = 0; columna < n; columna++) {
+	}
+	
+	
+	//Imprimir matriz
+	public static void imprimiMatriz(Casilla[][] casillas) {
+		for(int fila = 0; fila < tamañoMatriz; fila++) {
+			for(int columna = 0; columna < tamañoMatriz; columna++) {
 					System.out.print((casillas[fila][columna].getEstado()?"■":".") + "  ");
 			}
 			System.out.print("\n");
@@ -211,9 +205,42 @@ public class Casilla extends Thread{
 	
 	
 	//Imprimir matriz
-	public static void imprimiMatriz(Casilla[] casillas) {
-		
-	}
+		public static Casilla[][] cargarArchivo()  throws IOException {
+
+			//Leer archivo
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	        //System.out.println("Ingrese el nombre del archivo: ");
+	        //String nombreArchivo = br.readLine();
+	        br.close();
+
+			//String path = "files/"+nombreArchivo;
+	        String path = "files/caso1.txt";
+	        BufferedReader archivo = new BufferedReader(new FileReader(path));
+	        tamañoMatriz = Integer.parseInt(archivo.readLine());
+			generaciones = Integer.parseInt(archivo.readLine());
+			
+			Casilla[][] result = new Casilla[tamañoMatriz][tamañoMatriz];
+
+			System.out.println("Generaciones: "+ Integer.toString(generaciones));
+			
+			
+	        for (int i = 0; i < tamañoMatriz; i++){
+	            String[] valores = archivo.readLine().split(",");
+
+	            for (int j = 0; j < tamañoMatriz; j++) {
+	                boolean estadoInicial = Boolean.parseBoolean(valores[j]);
+	                //Cargar Estado
+	                result[i][j] = new Casilla(i,j,estadoInicial);
+	            }
+	        }
+	        
+	        archivo.close();
+	        
+			return result;
+	        
+	        
+	        
+		}
 	
 	
 }
