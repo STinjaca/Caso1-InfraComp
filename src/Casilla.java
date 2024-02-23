@@ -34,14 +34,6 @@ public class Casilla extends Thread{
 	public void run() {
 		calcularAdyacentes();
 		while(stack.size() > 0 || totalAdy > adyRecibido) {
-			if (totalAdy > adyRecibido) {
-				System.out.println("Entrar a mi buzon Origen["+ fila + "]["+ columna + "] total:" + totalAdy + " Recibidos:"+ adyRecibido);
-				int[] datos = cartero.consultarPropio(fila, columna);
-				adyRecibido+=datos[0];
-				adyVivas+=datos[1];
-				System.out.println("Mirado mi buzon Origen["+ fila + "]["+ columna + "] total:" + totalAdy + " Recibidos:"+ adyRecibido);
-				//System.err.println("hola");
-			}
 			
 			if(stack.size() > 0) {
 				int[] pos = stack.peek();
@@ -49,7 +41,15 @@ public class Casilla extends Thread{
 				if(result) {
 					stack.pop();
 				}
+
 			}
+			if (totalAdy > adyRecibido) {
+				int[] datos = cartero.consultarPropio(fila, columna);
+				adyRecibido+=datos[0];
+				adyVivas+=datos[1];
+				//System.err.println("hola");
+			}
+
 		}
 		
 		if (adyVivas == 0 || adyVivas > 3) {

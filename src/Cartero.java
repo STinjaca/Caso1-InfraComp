@@ -8,11 +8,12 @@ public class Cartero {
 	}
 	
 	public void iniciarBuzon(int fila, int columna) {
-		buzones[fila][columna] = new Buzon(fila+1);
+		buzones[fila][columna] = new Buzon(fila+1, "" + fila + "" + columna);
 	}
 	
 	public boolean consultarEnvio(int filaOrigen, int columnaOrigen, int fila, int columna, boolean estado) {
-		return buzones[fila][columna].apilar(buzones[filaOrigen][columnaOrigen], filaOrigen, columnaOrigen, fila, columna, estado);
+			return buzones[fila][columna].apilar(buzones[filaOrigen][columnaOrigen], filaOrigen, columnaOrigen, fila, columna, estado);
+		
 	}
 	
 	/*Desapilar

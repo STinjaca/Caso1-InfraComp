@@ -1,13 +1,19 @@
 import java.util.Stack;
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class Buzon {
 	private Stack<Boolean> stack = new Stack<Boolean>();
 	private int capacidad;
 	private boolean despierto;
+	private String nombre;
+	private Set<String> esperando = new HashSet<String>();
 	
-	public Buzon(int capacidad) {
+	public Buzon(int capacidad, String nombre) {
 		this.capacidad = capacidad;
 		this.despierto = true;
+		this.nombre = nombre;
 	}
 	
 	public synchronized boolean isDespierto() {
@@ -26,26 +32,30 @@ public class Buzon {
 		return capacidad;
 	}
 	
-	public synchronized boolean apilar(Buzon origen, int filaOrigen, int columnaOrigen, int fila, int columna, boolean estado) {
-		System.out.println("Entró en apilar Origen["+ filaOrigen + "]["+ columnaOrigen + "] Destino ["+ fila +"][" + columna+"]");
-		if (false) {
-			System.out.println("dueño dormido Origen["+ filaOrigen + "]["+ columnaOrigen + "] Destino ["+ fila +"][" + columna+"]");
-			return false;
+	public synchronized boolean apilar(Buzon buzon, int filaOrigen, int columnaOrigen, int fila, int columna, boolean estado) {
+		
+		synchronized(esperando) {
+			if (esperando.contains(""+ filaOrigen +"" +columnaOrigen)) {
+				return false;
+			}
 		}
 		
-
 		while (stack.size()>= capacidad) {
-			System.out.println("me voy a dormir Origen["+ filaOrigen + "]["+ columnaOrigen + "] Destino ["+ fila +"][" + columna+"]");
 			try {
+				synchronized(buzon.esperando) {
+					buzon.esperando.add(nombre);
+				}
 				this.wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		
-
+		synchronized(buzon.esperando) {
+			buzon.esperando.remove(nombre);
+		}
+		
 		stack.add(estado);
-		System.out.println("Enviado Origen["+ filaOrigen + "]["+ columnaOrigen + "] Destino ["+ fila +"][" + columna+"]");
 		return true;
 	}
 	
